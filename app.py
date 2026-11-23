@@ -1,145 +1,122 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
+import joblib
+import os
 
-# Page configuration
 st.set_page_config(
-    page_title="Sales Dashboard",
+    page_title="Sales Predictive Analytics",
     page_icon="📊",
     layout="wide"
 )
 
-# Dashboard title
-st.title("📊 Sales & Revenue Analysis Dashboard")
-st.write("Analyze sales performance and business insights.")
+st.title("📊 Sales Predictive Analytics Dashboard")
+st.write("Sales analysis and machine learning prediction")
 
-# Data upload
-st.sidebar.header("Upload Sales Data")
-
-uploaded_file = st.sidebar.file_uploader(
-    "Upload CSV or Excel file",
-    type=["csv", "xlsx"]
-)
-
-if uploaded_file is not None:
-    if uploaded_file.name.endswith(".csv"):
-        df = pd.read_csv(uploaded_file)
-    else:
-        df = pd.read_excel(uploaded_file)
-else:
-    df = pd.read_csv("data/sales_data.csv")
+# Load dataset
+df = pd.read_csv("data/sales_data.csv")
 df["Order Date"] = pd.to_datetime(df["Order Date"])
 
-# Sidebar filters
-st.sidebar.header("Dashboard Filters")
-
-categories = st.sidebar.multiselect(
-    "Select Category",
-    options=df["Category"].unique(),
-    default=df["Category"].unique()
-)
-
-regions = st.sidebar.multiselect(
-    "Select Region",
-    options=df["Region"].unique(),
-    default=df["Region"].unique()
-)
-
-# Filter data
-filtered_df = df[
-    (df["Category"].isin(categories)) &
-    (df["Region"].isin(regions))
-]
-
-# KPI calculations
-total_revenue = filtered_df["Revenue"].sum()
-total_profit = filtered_df["Profit"].sum()
-total_orders = filtered_df["Order ID"].nunique()
-total_quantity = filtered_df["Quantity"].sum()
-
-# KPI cards
+# KPI metrics
 col1, col2, col3, col4 = st.columns(4)
 
-col1.metric("Total Revenue", f"₹{total_revenue:,.0f}")
-col2.metric("Total Profit", f"₹{total_profit:,.0f}")
-col3.metric("Total Orders", total_orders)
-col4.metric("Units Sold", total_quantity)
+col1.metric("Total Revenue", f"₹{df['Revenue'].sum():,.2f}")
+col2.metric("Total Profit", f"₹{df['Profit'].sum():,.2f}")
+col3.metric("Total Orders", df["Order ID"].nunique())
+col4.metric("Quantity Sold", int(df["Quantity"].sum()))
 
 st.divider()
 
-# Monthly sales trend
-st.subheader("Monthly Sales Trend")
+# Revenue by Category
+st.subheader("Revenue by Category")
+category_revenue = df.groupby("Category")["Revenue"].sum()
+st.bar_chart(category_revenue)
 
-monthly_sales = (
-    filtered_df
-    .set_index("Order Date")
-    .resample("ME")["Revenue"]
-    .sum()
-    .reset_index()
-)
+# Region-wise Revenue
+st.subheader("Region-wise Revenue")
+region_revenue = df.groupby("Region")["Revenue"].sum()
+st.bar_chart(region_revenue)
 
-fig1 = px.line(
-    monthly_sales,
-    x="Order Date",
-    y="Revenue",
-    markers=True,
-    title="Monthly Revenue"
-)
-
-st.plotly_chart(fig1, use_container_width=True)
-
-# Product analysis
-col5, col6 = st.columns(2)
-
-with col5:
-    st.subheader("Revenue by Product")
-
-    product_sales = (
-        filtered_df.groupby("Product Name")["Revenue"]
-        .sum()
-        .reset_index()
-    )
-
-    fig2 = px.bar(
-        product_sales,
-        x="Product Name",
-        y="Revenue",
-        title="Product-wise Revenue"
-    )
-
-    st.plotly_chart(fig2, use_container_width=True)
-
-with col6:
-    st.subheader("Sales by Category")
-
-    category_sales = (
-        filtered_df.groupby("Category")["Revenue"]
-        .sum()
-        .reset_index()
-    )
-
-    fig3 = px.pie(
-        category_sales,
-        names="Category",
-        values="Revenue",
-        title="Category-wise Revenue"
-    )
-
-    st.plotly_chart(fig3, use_container_width=True)
+# Monthly Revenue
+st.subheader("Monthly Revenue Trend")
+monthly_revenue = df.groupby(
+    df["Order Date"].dt.to_period("M")
+)["Revenue"].sum()
+monthly_revenue.index = monthly_revenue.index.astype(str)
+st.line_chart(monthly_revenue)
 
 # Top products
-st.subheader("Top 5 Selling Products")
+st.subheader("Top Selling Products")
+top_products = df.groupby("Product Name")["Quantity"].sum()
+st.bar_chart(top_products.sort_values(ascending=False).head(10))
 
-top_products = (
-    filtered_df.groupby("Product Name")["Quantity"]
-    .sum()
-    .sort_values(ascending=False)
-    .head(5)
-    .reset_index()
-)
+st.divider()
 
-st.dataframe(top_products, use_container_width=True)
+# Machine Learning Prediction
+st.subheader("🤖 Sales Revenue Prediction")
 
-# Dataset preview
-with st.expander("View Sales Dataset"):
-    st.dataframe(filtered_df, use_container_width=True)
+model_path = "outputs/sales_prediction_model.pkl"
+
+if os.path.exists(model_path):
+
+    model = joblib.load(model_path)
+
+    product = st.selectbox(
+        "Select Product",
+        sorted(df["Product Name"].unique())
+    )
+
+    category = st.selectbox(
+        "Select Category",
+        sorted(df["Category"].unique())
+    )
+
+    quantity = st.number_input(
+        "Quantity",
+        min_value=1,
+        value=1
+    )
+
+    price = st.number_input(
+        "Unit Price",
+        min_value=0.0,
+        value=float(df["Unit Price"].median())
+    )
+
+    region = st.selectbox(
+        "Select Region",
+        sorted(df["Region"].unique())
+    )
+
+    order_date = st.date_input("Order Date")
+
+    if st.button("Predict Revenue"):
+
+        prediction_data = pd.DataFrame([{
+            "Product Name": product,
+            "Category": category,
+            "Quantity": quantity,
+            "Unit Price": price,
+            "Region": region,
+            "Month": order_date.month,
+            "Day": order_date.day,
+            "DayOfWeek": order_date.weekday()
+        }])
+
+        prediction = model.predict(prediction_data)[0]
+
+        st.success(
+            f"Predicted Revenue: ₹{prediction:,.2f}"
+        )
+
+else:
+    st.warning(
+        "Model not found. Run python analysis.py first."
+    )
+
+st.divider()
+
+st.subheader("Dataset Preview")
+st.dataframe(df.head(20), use_container_width=True)
+
+st.caption("Developed using Python, Pandas, Scikit-learn and Streamlit")

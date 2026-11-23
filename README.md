@@ -1,60 +1,115 @@
-Sales & Revenue Analysis Dashboard
+📊 Predictive Analytics Using Historical Sales Data
 
-Project Overview
+📌 Project Overview
 
-This project is a Sales and Revenue Analysis Dashboard developed using Python, Pandas, Streamlit, and Plotly.
+This project focuses on analysing historical sales data and predicting sales revenue using Machine Learning techniques.
 
-It helps analyse sales performance and understand business insights through interactive visualizations.
+The project uses Python for data analysis, data preprocessing, visualization, and predictive modelling. An interactive Streamlit dashboard is developed to present business insights and sales predictions.
 
-Objectives
+🎯 Objectives
 
-- Analyse total sales and revenue.
-- Track monthly revenue trends.
-- Identify top-performing products.
-- Compare sales across product categories.
-- Explore sales performance across regions.
+- Analyse historical sales data.
+- Identify sales trends and patterns.
+- Understand product and regional performance.
+- Build a regression-based prediction model.
+- Evaluate model performance.
+- Present insights through an interactive dashboard.
 
-Technologies Used
+🛠️ Technologies Used
 
 - Python
 - Pandas
+- NumPy
+- Matplotlib
+- Scikit-learn
 - Streamlit
 - Plotly
-- Excel / CSV
 
-Dashboard Features
-
-- Total Sales and Revenue KPIs
-- Monthly Revenue Trend
-- Top-performing Products
-- Category-wise Sales Analysis
-- Interactive Date, Category and Region Filters
-- CSV and Excel Data Upload
-
-Project Structure
+📂 Project Structure
 
 thiranex/
 ├── app.py
 ├── analysis.py
 ├── requirements.txt
 ├── README.md
-└── data/
-    ├── generate_data.py
-    └── sales_data.csv
+├── .gitignore
+├── data/
+│   ├── sales_data.csv
+│   └── generate_data.py
+└── outputs/
+    ├── sales_prediction_model.pkl
+    ├── actual_vs_predicted.png
+    └── prediction_results.csv
 
-How to Run the Project
+📈 Dataset Description
 
-1. Clone or download this repository.
-2. Install the required libraries:
+The dataset contains 500 sales records and 10 columns:
+
+- Order ID
+- Order Date
+- Product Name
+- Category
+- Quantity
+- Unit Price
+- Revenue
+- Cost
+- Profit
+- Region
+
+🤖 Machine Learning Model
+
+Random Forest Regressor is used to predict sales revenue.
+
+Model Evaluation
+
+The model is evaluated using:
+
+- Mean Absolute Error (MAE)
+- Root Mean Squared Error (RMSE)
+- R² Score
+
+📊 Dashboard Features
+
+- Total Revenue
+- Total Profit
+- Total Orders
+- Quantity Sold
+- Category-wise Revenue
+- Region-wise Revenue
+- Monthly Revenue Trends
+- Top Selling Products
+- Interactive Sales Revenue Prediction
+
+⚙️ Installation and Execution
+
+1. Clone the repository
+
+git clone YOUR_GITHUB_REPOSITORY_URL
+
+2. Navigate to the project folder
+
+cd thiranex
+
+3. Install dependencies
 
 pip install -r requirements.txt
 
-3. Run the dashboard:
+4. Run the analysis
+
+python analysis.py
+
+5. Launch the dashboard
 
 streamlit run app.py
 
-4. Open the local URL displayed in the terminal.
+📌 Expected Outcome
 
-Expected Outcome
+A machine learning-based sales analytics solution that helps identify historical sales patterns, evaluate predictive performance, and generate revenue predictions through an interactive dashboard.
 
-An interactive dashboard that helps users understand sales performance, revenue trends, and product performance through data visualization.
+👩‍💻 Project Category
+
+Predictive Analytics | Machine Learning | Data Analysis
+
+📄 License
+
+This project is created for educational and academic purposes.
